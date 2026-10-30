@@ -1,0 +1,20 @@
+# Generated builds
+output/
+*.iso
+*.img
+*.qcow2
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*~
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local development
+.env
+.env.*
