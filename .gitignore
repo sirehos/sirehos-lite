@@ -23,3 +23,6 @@ __pycache__/
 /build/benih-1.0/rootfs/
 /build/benih-1.0/iso/
 /build/benih-1.0/logs/
+
+# All generated Sireh OS build artifacts
+/build/
