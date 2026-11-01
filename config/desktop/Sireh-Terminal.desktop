@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Sireh Terminal
+Comment=Open the Sireh OS command-line environment
+Exec=qterminal
+Icon=utilities-terminal
+Terminal=false
+Categories=System;TerminalEmulator;
+StartupNotify=true

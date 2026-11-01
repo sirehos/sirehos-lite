@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Sireh OS Lite - Benih
+Description=Sireh OS Lite 1.0 startup splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/sireh-benih
+ScriptFile=/usr/share/plymouth/themes/sireh-benih/sireh-benih.script

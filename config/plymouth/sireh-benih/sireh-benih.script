@@ -1,0 +1,24 @@
+Window.SetBackgroundTopColor(0.04, 0.07, 0.08);
+Window.SetBackgroundBottomColor(0.04, 0.07, 0.08);
+
+emblem_image = Image("emblem.png");
+
+emblem_width = emblem_image.GetWidth();
+emblem_height = emblem_image.GetHeight();
+
+scale = 300 / emblem_width;
+
+emblem_image = emblem_image.Scale(
+    emblem_width * scale,
+    emblem_height * scale
+);
+
+emblem_sprite = Sprite(emblem_image);
+
+emblem_sprite.SetX(
+    (Window.GetWidth() - emblem_image.GetWidth()) / 2
+);
+
+emblem_sprite.SetY(
+    (Window.GetHeight() - emblem_image.GetHeight()) / 2
+);

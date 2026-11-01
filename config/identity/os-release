@@ -1,0 +1,11 @@
+NAME="Sireh OS Lite"
+PRETTY_NAME="Sireh OS Lite 1.0 (Benih)"
+ID=sirehos
+ID_LIKE="ubuntu debian"
+VERSION_ID="1.0"
+VERSION="1.0 (Benih)"
+VERSION_CODENAME=benih
+UBUNTU_CODENAME=noble
+HOME_URL="https://sirehos.org"
+SUPPORT_URL="https://github.com/sirehos/sirehos-lite"
+BUG_REPORT_URL="https://github.com/sirehos/sirehos-lite/issues"
