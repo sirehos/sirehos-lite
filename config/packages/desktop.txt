@@ -1,0 +1,18 @@
+# Sireh OS Lite 1.0 Benih
+# Graphical live desktop package baseline
+# Ubuntu 24.04 LTS (Noble)
+
+accountsservice
+casper
+lightdm
+lightdm-gtk-greeter
+lxqt-core
+openbox
+pcmanfm-qt
+qterminal
+plymouth
+plymouth-label
+xserver-xorg-core
+xserver-xorg-input-libinput
+xserver-xorg-video-all
+python3-pyqt5
