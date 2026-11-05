@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 
 from sireh_doctor.gui.hardware_page import HardwarePage
 from sireh_doctor.gui.storage_page import StoragePage
+from sireh_doctor.gui.os_boot_page import OSBootPage
 
 
 FEATURES = [
@@ -122,6 +123,10 @@ class MainWindow(QMainWindow):
 
             if feature == "Storage Doctor":
                 self.pages.addWidget(StoragePage())
+                continue
+
+            if feature == "OS & Boot Doctor":
+                self.pages.addWidget(OSBootPage())
                 continue
 
             page = QWidget()
