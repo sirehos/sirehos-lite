@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 )
 
 from sireh_doctor.gui.hardware_page import HardwarePage
+from sireh_doctor.gui.storage_page import StoragePage
 
 
 FEATURES = [
@@ -117,6 +118,10 @@ class MainWindow(QMainWindow):
         for index, feature in enumerate(FEATURES, start=1):
             if feature == "Hardware Doctor":
                 self.pages.addWidget(HardwarePage())
+                continue
+
+            if feature == "Storage Doctor":
+                self.pages.addWidget(StoragePage())
                 continue
 
             page = QWidget()

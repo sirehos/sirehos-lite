@@ -1,0 +1,142 @@
+{
+  "sata_healthy": {
+    "smartctl": {
+      "exit_status": 0
+    },
+    "device": {
+      "type": "sat"
+    },
+    "smart_status": {
+      "passed": true
+    },
+    "temperature": {
+      "current": 27
+    },
+    "power_on_time": {
+      "hours": 18369
+    },
+    "ata_smart_attributes": {
+      "table": [
+        {
+          "id": 5,
+          "name": "Reallocated_Sector_Ct",
+          "raw": {
+            "value": 0
+          }
+        },
+        {
+          "id": 9,
+          "name": "Power_On_Hours",
+          "raw": {
+            "value": 18369
+          }
+        },
+        {
+          "id": 194,
+          "name": "Temperature_Celsius",
+          "raw": {
+            "value": 27
+          }
+        },
+        {
+          "id": 197,
+          "name": "Current_Pending_Sector",
+          "raw": {
+            "value": 0
+          }
+        },
+        {
+          "id": 198,
+          "name": "Offline_Uncorrectable",
+          "raw": {
+            "value": 0
+          }
+        }
+      ]
+    }
+  },
+  "sata_degraded": {
+    "smartctl": {
+      "exit_status": 0
+    },
+    "device": {
+      "type": "sat"
+    },
+    "smart_status": {
+      "passed": true
+    },
+    "temperature": {
+      "current": 42
+    },
+    "power_on_time": {
+      "hours": 26000
+    },
+    "ata_smart_attributes": {
+      "table": [
+        {
+          "id": 5,
+          "name": "Reallocated_Sector_Ct",
+          "raw": {
+            "value": 12
+          }
+        },
+        {
+          "id": 197,
+          "name": "Current_Pending_Sector",
+          "raw": {
+            "value": 3
+          }
+        },
+        {
+          "id": 198,
+          "name": "Offline_Uncorrectable",
+          "raw": {
+            "value": 1
+          }
+        }
+      ]
+    }
+  },
+  "nvme_healthy": {
+    "smartctl": {
+      "exit_status": 0
+    },
+    "device": {
+      "type": "nvme"
+    },
+    "smart_status": {
+      "passed": true
+    },
+    "nvme_smart_health_information_log": {
+      "critical_warning": 0,
+      "temperature": 303,
+      "available_spare": 100,
+      "available_spare_threshold": 10,
+      "percentage_used": 12,
+      "media_errors": 0,
+      "power_on_hours": 6200,
+      "unsafe_shutdowns": 4
+    }
+  },
+  "nvme_degraded": {
+    "smartctl": {
+      "exit_status": 8
+    },
+    "device": {
+      "type": "nvme"
+    },
+    "smart_status": {
+      "passed": false
+    },
+    "nvme_smart_health_information_log": {
+      "critical_warning": 1,
+      "temperature": 345,
+      "available_spare": 8,
+      "available_spare_threshold": 10,
+      "percentage_used": 105,
+      "media_errors": 14,
+      "power_on_hours": 35000,
+      "unsafe_shutdowns": 27
+    }
+  }
+}
