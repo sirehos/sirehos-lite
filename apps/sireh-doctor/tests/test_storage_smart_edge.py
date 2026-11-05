@@ -17,9 +17,15 @@ class SmartEdgeCaseTests(unittest.TestCase):
             side_effect=lambda value: value == "/dev/sda",
         )
         cls._device_patch.start()
+        cls._helper_patch = patch(
+            "sireh_doctor.diagnostics.storage_smart._trusted_helper",
+            return_value=(True, None),
+        )
+        cls._helper_patch.start()
 
     @classmethod
     def tearDownClass(cls):
+        cls._helper_patch.stop()
         cls._device_patch.stop()
 
 
@@ -50,7 +56,7 @@ class SmartEdgeCaseTests(unittest.TestCase):
     @patch("sireh_doctor.diagnostics.storage_smart.subprocess.run")
     def test_command_line_parse_error(self, run):
         run.return_value = subprocess.CompletedProcess(
-            [], 1, json.dumps({"smartctl": {"exit_status": 1}}), ""
+            [], 0, json.dumps({"smartctl": {"exit_status": 1}}), ""
         )
         result = collect_smart("/dev/sda")
         self.assertEqual(result["status"], "UNKNOWN")

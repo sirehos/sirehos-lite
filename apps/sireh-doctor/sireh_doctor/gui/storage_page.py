@@ -155,6 +155,7 @@ class StoragePage(QWidget):
         self.smart_results = {}
         self.smart_labels = {}
         self.smart_buttons = {}
+        self.visible_devices = set()
         self.refresh_button.clicked.connect(self.refresh)
         self.refresh()
 
@@ -180,6 +181,12 @@ class StoragePage(QWidget):
             devices = []
 
         cards = []
+
+        # Rebuild widget references for the current inventory.
+        # Completed results remain cached for unchanged devices.
+        self.smart_labels.clear()
+        self.smart_buttons.clear()
+        self.visible_devices.clear()
 
         for device in devices:
             if not isinstance(device, dict):
@@ -237,6 +244,13 @@ class StoragePage(QWidget):
                 )
                 disk_card.layout().addWidget(health_label)
                 self.smart_labels[device_path] = health_label
+                self.visible_devices.add(device_path)
+
+                cached = self.smart_results.get(device_path)
+                if cached is not None:
+                    self._display_smart_result(
+                        device_path, cached
+                    )
 
             cards.append(disk_card)
 
@@ -330,6 +344,12 @@ class StoragePage(QWidget):
         assessment = result.get("assessment") or {}
 
         self.smart_results[path] = result
+        self._display_smart_result(path, result)
+
+    def _display_smart_result(self, path, result):
+        """Render a readable, conservative SMART report."""
+        collection = result.get("collection") or {}
+        assessment = result.get("assessment") or {}
 
         label = self.smart_labels.get(path)
         if label is None:
@@ -342,8 +362,13 @@ class StoragePage(QWidget):
 
         lines = ["SMART: " + str(status)]
 
-        if collection.get("status") == "PERMISSION_REQUIRED":
+        collection_status = collection.get("status")
+        collection_error = collection.get("error")
+
+        if collection_status == "PERMISSION_REQUIRED":
             lines.append("Administrator permission required")
+        elif collection_error:
+            lines.append("Collection: " + str(collection_error))
 
         if summary:
             lines.append(str(summary))
@@ -351,11 +376,33 @@ class StoragePage(QWidget):
         if recommendation:
             lines.append(str(recommendation))
 
-        if isinstance(metrics, dict):
+        metric_names = {
+            "overall_smart_passed": "Overall SMART passed",
+            "temperature_c": "Temperature C",
+            "power_on_hours": "Power On Hours",
+            "nvme_critical_warning": "NVMe critical warning",
+            "nvme_media_errors": "NVMe media errors",
+            "nvme_percentage_used": "NVMe endurance used (%)",
+            "nvme_available_spare_percent": "NVMe available spare (%)",
+            "nvme_spare_threshold_percent": "NVMe spare threshold (%)",
+            "ata_reallocated_sectors": "Reallocated sectors",
+            "ata_pending_sectors": "Pending sectors",
+            "ata_uncorrectable_sectors": "Uncorrectable sectors",
+        }
+
+        if isinstance(metrics, dict) and metrics:
+            lines.append("Measurements:")
+
             for key, value in sorted(metrics.items()):
-                lines.append(
-                    key.replace("_", " ").title() + ": " + str(value)
+                name = metric_names.get(
+                    key, key.replace("_", " ").title()
                 )
+                lines.append(name + ": " + str(value))
+
+        if status in ("PASS", "WARN", "FAIL"):
+            lines.append(
+                "SMART is not a guarantee against future disk failure."
+            )
 
         label.setText("\n".join(lines))
 
@@ -368,7 +415,10 @@ class StoragePage(QWidget):
         if self.smart_workers.get(device_path) is worker:
             self.smart_workers.pop(device_path, None)
 
-        if not self.smart_workers:
+        if not any(
+            task.isRunning()
+            for task in self.smart_workers.values()
+        ):
             self.refresh_button.setEnabled(True)
 
         worker.deleteLater()

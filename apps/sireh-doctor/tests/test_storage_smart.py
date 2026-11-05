@@ -17,9 +17,15 @@ class SmartCollectorTests(unittest.TestCase):
             side_effect=lambda value: value == "/dev/sda",
         )
         cls._device_patch.start()
+        cls._helper_patch = patch(
+            "sireh_doctor.diagnostics.storage_smart._trusted_helper",
+            return_value=(True, None),
+        )
+        cls._helper_patch.start()
 
     @classmethod
     def tearDownClass(cls):
+        cls._helper_patch.stop()
         cls._device_patch.stop()
 
 
@@ -38,7 +44,8 @@ class SmartCollectorTests(unittest.TestCase):
         run.assert_called_once()
         self.assertEqual(
             run.call_args.args[0],
-            ["smartctl", "--json=c", "-a", "/dev/sda"],
+            ["/usr/libexec/sireh-doctor/sireh-smart-helper",
+             "/dev/sda"],
         )
 
     @patch("sireh_doctor.diagnostics.storage_smart.subprocess.run")
@@ -52,7 +59,7 @@ class SmartCollectorTests(unittest.TestCase):
             }
         }
         run.return_value = subprocess.CompletedProcess(
-            [], 2, json.dumps(payload), ""
+            [], 0, json.dumps(payload), ""
         )
         result = collect_smart("/dev/sda")
         self.assertEqual(result["status"], "PERMISSION_REQUIRED")
@@ -64,7 +71,7 @@ class SmartCollectorTests(unittest.TestCase):
             "smart_status": {"passed": False},
         }
         run.return_value = subprocess.CompletedProcess(
-            [], 8, json.dumps(payload), ""
+            [], 0, json.dumps(payload), ""
         )
         result = collect_smart("/dev/sda")
         self.assertEqual(result["status"], "AVAILABLE")
@@ -75,7 +82,7 @@ class SmartCollectorTests(unittest.TestCase):
         run.side_effect = FileNotFoundError()
         result = collect_smart("/dev/sda")
         self.assertEqual(result["status"], "UNKNOWN")
-        self.assertIn("not installed", result["error"])
+        self.assertIn("unavailable", result["error"])
 
     @patch("sireh_doctor.diagnostics.storage_smart.subprocess.run")
     def test_timeout(self, run):
@@ -104,7 +111,7 @@ class SmartCollectorTests(unittest.TestCase):
     def test_device_access_failure(self, run):
         payload = {"smartctl": {"exit_status": 2}}
         run.return_value = subprocess.CompletedProcess(
-            [], 2, json.dumps(payload), ""
+            [], 0, json.dumps(payload), ""
         )
         result = collect_smart("/dev/sda")
         self.assertEqual(result["status"], "UNKNOWN")

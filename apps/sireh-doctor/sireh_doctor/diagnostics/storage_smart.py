@@ -32,6 +32,42 @@ def _valid_device_path(device_path):
     return stat.S_ISBLK(details.st_mode)
 
 
+
+HELPER_PATH = "/usr/libexec/sireh-doctor/sireh-smart-helper"
+
+
+def _trusted_helper():
+    """Require a root-owned, non-writable installation chain."""
+    components = (
+        "/usr",
+        "/usr/libexec",
+        "/usr/libexec/sireh-doctor",
+        HELPER_PATH,
+    )
+
+    try:
+        for path in components:
+            info = os.lstat(path)
+
+            if info.st_uid != 0 or info.st_mode & 0o022:
+                return False, "Native SMART helper installation is untrusted"
+
+            if path == HELPER_PATH:
+                if not stat.S_ISREG(info.st_mode):
+                    return False, "Native SMART helper installation is untrusted"
+                if not info.st_mode & 0o111:
+                    return False, "Native SMART helper is not executable"
+            elif not stat.S_ISDIR(info.st_mode):
+                return False, "Native SMART helper installation is untrusted"
+
+    except FileNotFoundError:
+        return False, "Native SMART helper is not installed"
+    except OSError:
+        return False, "Cannot verify native SMART helper"
+
+    return True, None
+
+
 def collect_smart(device_path, timeout=20):
     """Collect SMART JSON without initiating tests or repairs."""
     result = {
@@ -46,25 +82,49 @@ def collect_smart(device_path, timeout=20):
         result["error"] = "Invalid or unavailable block device"
         return result
 
+    trusted, helper_error = _trusted_helper()
+
+    if not trusted:
+        result["error"] = helper_error
+        return result
+
+    # Never elevate or execute development-tree helpers here.
     try:
         completed = subprocess.run(
-            ["smartctl", "--json=c", "-a", device_path],
+            [HELPER_PATH, device_path],
             capture_output=True,
             text=True,
-            timeout=timeout,
+            timeout=timeout + 5,
             check=False,
         )
     except FileNotFoundError:
-        result["error"] = "smartctl is not installed"
+        result["error"] = "Native SMART helper is unavailable"
         return result
     except subprocess.TimeoutExpired:
         result["error"] = "SMART query timed out"
         return result
-    except OSError as exc:
-        result["error"] = "SMART query could not start: {}".format(exc)
+    except OSError:
+        result["error"] = "Native SMART helper could not start"
         return result
 
-    result["exit_code"] = completed.returncode
+    if completed.returncode != 0:
+        if completed.returncode == 77:
+            result["status"] = "PERMISSION_REQUIRED"
+            result["error"] = (
+                "Administrator permission required for SMART access"
+            )
+        else:
+            result["error"] = (
+                "Native SMART helper failed with exit code {}"
+                .format(completed.returncode)
+            )
+        return result
+
+    # Bound JSON input before parsing. A separate process-level
+    # output cap is required before enabling privileged execution.
+    if len(completed.stdout.encode("utf-8")) > 2 * 1024 * 1024:
+        result["error"] = "SMART utility output exceeds safety limit"
+        return result
 
     try:
         data = json.loads(completed.stdout)
@@ -81,6 +141,17 @@ def collect_smart(device_path, timeout=20):
     if not isinstance(metadata, dict):
         result["error"] = "SMART utility metadata missing or invalid"
         return result
+
+    smart_exit = metadata.get("exit_status")
+
+    if (
+        type(smart_exit) is not int
+        or not 0 <= smart_exit <= 255
+    ):
+        result["error"] = "SMART diagnostic exit status missing or invalid"
+        return result
+
+    result["exit_code"] = smart_exit
 
     messages = metadata.get("messages", [])
 
@@ -106,11 +177,11 @@ def collect_smart(device_path, timeout=20):
     if "permission denied" in message_text:
         result["status"] = "PERMISSION_REQUIRED"
         result["error"] = "Administrator permission required for SMART access"
-    elif completed.returncode < 0:
+    elif smart_exit < 0:
         result["error"] = "SMART utility terminated unexpectedly"
-    elif completed.returncode & 3:
+    elif smart_exit & 3:
         result["error"] = "SMART device access or command failed"
-    elif completed.returncode > 255:
+    elif smart_exit > 255:
         result["error"] = "SMART utility returned an invalid exit status"
     else:
         result["status"] = "AVAILABLE"
