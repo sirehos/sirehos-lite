@@ -340,7 +340,7 @@ def diagnose_boot():
     )
     return result(
         "UNKNOWN",
-        "No definitive installed-OS boot verdict from read-only evidence",
+        "Bootability not verified; available evidence is inconclusive",
         details,
     )
 

@@ -102,7 +102,7 @@ class OSBootPage(QWidget):
             column = QVBoxLayout(card)
 
             heading = QLabel(
-                "F{:02d} — {}".format(index + 1, button_label)
+                button_label
             )
             heading.setStyleSheet(
                 "font-size: 15px; font-weight: bold; color: #153d30;"
@@ -151,7 +151,7 @@ class OSBootPage(QWidget):
             "border-radius: 9px;"
         )
         assessment_layout = QVBoxLayout(assessment)
-        assessment_layout.addWidget(QLabel("F07 — Boot Assessment"))
+        assessment_layout.addWidget(QLabel("Boot Assessment"))
 
         self.assessment_status = QLabel(
             "UNKNOWN — No boot checks performed"
