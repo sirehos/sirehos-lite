@@ -73,6 +73,11 @@ class OSBootPage(QWidget):
         )
         controls.addWidget(self.run_all_button)
 
+        self.clear_button = QPushButton("Clear All Results")
+        self.clear_button.setObjectName("clearBootResults")
+        self.clear_button.clicked.connect(self.clear_results)
+        controls.addWidget(self.clear_button)
+
         self.progress = QLabel("Ready — no checks performed")
         controls.addWidget(self.progress, 1)
         layout.addLayout(controls)
@@ -190,6 +195,32 @@ class OSBootPage(QWidget):
         layout.addWidget(future)
         layout.addStretch()
 
+    def clear_results(self):
+        """Reset displayed findings without changing the system."""
+        if self.thread is not None:
+            return
+
+        self.results.clear()
+        self.checked_at.clear()
+
+        for status_label, time_label, details_label in self.cards.values():
+            status_label.setText("NOT CHECKED")
+            status_label.setStyleSheet(
+                "font-weight: bold; color: #64776c;"
+            )
+            time_label.setText("Last checked: Never")
+            details_label.setText("Run this check to view results.")
+
+        self.assessment_status.setText(
+            "UNKNOWN — No boot checks performed"
+        )
+        self.assessment_details.setText(
+            "Assessment uses only completed checks. "
+            "Unverified conditions remain UNKNOWN."
+        )
+        self.assessment_time.setText("Last updated: Never")
+        self.progress.setText("Ready — no checks performed")
+
     def start_checks(self, check_ids):
         if self.thread is not None:
             return
@@ -198,6 +229,7 @@ class OSBootPage(QWidget):
             "Running {} check(s)...".format(len(check_ids))
         )
         self.run_all_button.setEnabled(False)
+        self.clear_button.setEnabled(False)
         for button in self.buttons.values():
             button.setEnabled(False)
 
@@ -281,6 +313,7 @@ class OSBootPage(QWidget):
         self.thread = None
         self.worker = None
         self.run_all_button.setEnabled(True)
+        self.clear_button.setEnabled(True)
         for button in self.buttons.values():
             button.setEnabled(True)
         self.progress.setText(

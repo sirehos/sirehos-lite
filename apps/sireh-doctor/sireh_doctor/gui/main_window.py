@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
 from sireh_doctor.gui.hardware_page import HardwarePage
 from sireh_doctor.gui.storage_page import StoragePage
 from sireh_doctor.gui.os_boot_page import OSBootPage
+from sireh_doctor.gui.crash_page import CrashPage
 
 
 FEATURES = [
@@ -127,6 +128,10 @@ class MainWindow(QMainWindow):
 
             if feature == "OS & Boot Doctor":
                 self.pages.addWidget(OSBootPage())
+                continue
+
+            if feature == "Crash Detective":
+                self.pages.addWidget(CrashPage())
                 continue
 
             page = QWidget()

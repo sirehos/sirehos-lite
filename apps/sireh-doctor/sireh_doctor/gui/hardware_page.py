@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QFrame,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QMessageBox,
     QPushButton,
@@ -216,7 +217,17 @@ class HardwarePage(QWidget):
                 background: #1d6245;
             }
         """)
-        layout.addWidget(self.refresh_button, alignment=Qt.AlignLeft)
+        controls = QHBoxLayout()
+        controls.addWidget(self.refresh_button)
+
+        self.clear_button = QPushButton("Clear All Results")
+        self.clear_button.setObjectName("clearHardwareResults")
+        self.clear_button.setCursor(Qt.PointingHandCursor)
+        self.clear_button.clicked.connect(self.clear_results)
+        controls.addWidget(self.clear_button)
+        controls.addStretch()
+
+        layout.addLayout(controls)
 
         # Summary of implemented diagnostic checks only.
         self.summary_cards = {}
@@ -288,6 +299,61 @@ class HardwarePage(QWidget):
 
         self.refresh_button.clicked.connect(self.refresh)
         self.refresh()
+
+    def clear_results(self):
+        """Clear displayed assessments while retaining diagnostic controls."""
+        if not hasattr(self, "latest_findings"):
+            return
+
+        cleared = []
+        for finding in self.latest_findings:
+            item = dict(finding)
+            item["status"] = "UNKNOWN"
+            item["summary"] = "NOT CHECKED — Run this check to view results."
+            item["recommendation"] = "No recommendation until checked."
+            cleared.append(item)
+
+        self.latest_findings = cleared
+        self.check_timestamps = {}
+        self.last_check_time = None
+        self.last_check_id = None
+
+        for number in self.summary_cards.values():
+            number.setText("0")
+
+        for check_id, old_card in list(self.finding_cards.items()):
+            index = self.grid.indexOf(old_card)
+            if index < 0:
+                continue
+
+            row, column, row_span, column_span = (
+                self.grid.getItemPosition(index)
+            )
+
+            finding = next(
+                (
+                    item for item in cleared
+                    if finding_check_id(item) == check_id
+                ),
+                None,
+            )
+            if finding is None:
+                continue
+
+            new_card = create_finding_card(
+                finding,
+                on_run=lambda checked=False, cid=check_id:
+                    self.rerun_card(cid),
+                checked_at=None,
+            )
+
+            self.grid.removeWidget(old_card)
+            old_card.hide()
+            old_card.deleteLater()
+            self.grid.addWidget(
+                new_card, row, column, row_span, column_span
+            )
+            self.finding_cards[check_id] = new_card
 
     def run_individual_check(self, check_id):
         """Execute one read-only assessment and store its result."""
