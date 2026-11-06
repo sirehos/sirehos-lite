@@ -51,7 +51,7 @@ def _recommendation(source, check, status):
         return (
             "Review boot and EFI evidence. Record the existing "
             "configuration before considering manual changes.",
-            "MANUAL / HIGH-RISK IF MODIFIED",
+            "SAFE READ-ONLY REVIEW; BOOT CHANGES REQUIRE SEPARATE APPROVAL",
         )
 
     if "security" in name:

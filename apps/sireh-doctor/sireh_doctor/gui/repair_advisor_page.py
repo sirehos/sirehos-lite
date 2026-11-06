@@ -46,6 +46,30 @@ class RepairAdvisorPage(QWidget):
             "are performed. Advice is not proof of a diagnosis."
         ))
 
+        instructions = [
+            "STEP 1 — Run checks in the relevant Doctor tabs:",
+            "",
+            "• Hardware Doctor — hardware health",
+            "• Storage Doctor — drive discovery and SMART health",
+            "• OS & Boot Doctor — operating system and boot evidence",
+            "• Crash Detective — crash and failure evidence",
+            "• Security Doctor — security configuration",
+            "• Data Rescue — read-only drive discovery only",
+            "",
+            "STEP 2 — Return here and click Analyze Existing Results.",
+            "STEP 3 — Review findings and recommended next steps.",
+            "STEP 4 — Copy the troubleshooting plan if needed.",
+            "",
+            "You do not need to run every tab. Choose checks relevant "
+            "to your problem. Unrun checks remain NOT ASSESSED.",
+            "Repair Advisor never performs repairs.",
+        ]
+
+        self.body.addWidget(self._card(
+            "BEFORE USING REPAIR ADVISOR | How It Works",
+            chr(10).join(instructions)
+        ))
+
         buttons = QHBoxLayout()
         self.analyze_button = QPushButton("Analyze Existing Results")
         self.analyze_button.clicked.connect(self.analyze)
@@ -136,13 +160,15 @@ class RepairAdvisorPage(QWidget):
         plan = self.plan
         findings = plan["findings"]
 
-        summary_text = (
-            f"Diagnostic sources with results: "
-            f"{plan['assessed_sources']} / {plan['total_sources']}\n"
-            f"Actionable or uncertain findings: {len(findings)}\n"
+        summary_text = chr(10).join([
+            f"Diagnostic sources assessed: "
+            f"{plan['assessed_sources']} of {plan['total_sources']}",
+            f"Diagnostic sources not assessed: "
+            f"{len(plan['unassessed_sources'])}",
+            f"Findings requiring review: {len(findings)}",
             "Not assessed: "
-            + (", ".join(plan["unassessed_sources"]) or "None")
-        )
+            + (", ".join(plan["unassessed_sources"]) or "None"),
+        ])
         self.summary.layout().itemAt(1).widget().setText(summary_text)
 
         for index, finding in enumerate(findings, 1):
