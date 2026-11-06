@@ -20,6 +20,7 @@ from sireh_doctor.gui.hardware_page import HardwarePage
 from sireh_doctor.gui.storage_page import StoragePage
 from sireh_doctor.gui.os_boot_page import OSBootPage
 from sireh_doctor.gui.crash_page import CrashPage
+from sireh_doctor.gui.security_page import SecurityPage
 
 
 FEATURES = [
@@ -132,6 +133,10 @@ class MainWindow(QMainWindow):
 
             if feature == "Crash Detective":
                 self.pages.addWidget(CrashPage())
+                continue
+
+            if feature == "Security Doctor":
+                self.pages.addWidget(SecurityPage())
                 continue
 
             page = QWidget()
