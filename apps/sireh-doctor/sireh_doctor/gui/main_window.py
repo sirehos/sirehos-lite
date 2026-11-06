@@ -21,6 +21,7 @@ from sireh_doctor.gui.storage_page import StoragePage
 from sireh_doctor.gui.os_boot_page import OSBootPage
 from sireh_doctor.gui.crash_page import CrashPage
 from sireh_doctor.gui.security_page import SecurityPage
+from sireh_doctor.gui.data_rescue_page import DataRescuePage
 
 
 FEATURES = [
@@ -137,6 +138,10 @@ class MainWindow(QMainWindow):
 
             if feature == "Security Doctor":
                 self.pages.addWidget(SecurityPage())
+                continue
+
+            if feature == "Data Rescue":
+                self.pages.addWidget(DataRescuePage())
                 continue
 
             page = QWidget()
