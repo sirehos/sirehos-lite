@@ -22,6 +22,7 @@ from sireh_doctor.gui.os_boot_page import OSBootPage
 from sireh_doctor.gui.crash_page import CrashPage
 from sireh_doctor.gui.security_page import SecurityPage
 from sireh_doctor.gui.data_rescue_page import DataRescuePage
+from sireh_doctor.gui.repair_advisor_page import RepairAdvisorPage
 
 
 FEATURES = [
@@ -39,6 +40,27 @@ FEATURES = [
 
 
 class MainWindow(QMainWindow):
+
+    def _advisor_snapshots(self):
+        """Read cached diagnostic results without running checks."""
+        mapping = {
+            "Hardware Doctor": ("hardware", "results"),
+            "Storage Doctor": ("storage", "smart_results"),
+            "OS & Boot Doctor": ("osboot", "results"),
+            "Crash Detective": ("crash", "results"),
+            "Security Doctor": ("security", "results"),
+        }
+        snapshots = {}
+        for index, feature in enumerate(FEATURES):
+            if feature not in mapping:
+                continue
+            key, attribute = mapping[feature]
+            page = self.pages.widget(index)
+            values = getattr(page, attribute, None)
+            if isinstance(values, dict):
+                snapshots[key] = dict(values)
+        return snapshots
+
     def __init__(self):
         super().__init__()
 
@@ -143,6 +165,14 @@ class MainWindow(QMainWindow):
             if feature == "Data Rescue":
                 self.pages.addWidget(DataRescuePage())
                 continue
+            if feature == "Repair Advisor":
+                self.pages.addWidget(
+                    RepairAdvisorPage(
+                        snapshot_provider=self._advisor_snapshots
+                    )
+                )
+                continue
+
 
             page = QWidget()
             page_layout = QVBoxLayout(page)
