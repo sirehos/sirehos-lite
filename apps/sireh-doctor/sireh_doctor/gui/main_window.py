@@ -23,6 +23,7 @@ from sireh_doctor.gui.crash_page import CrashPage
 from sireh_doctor.gui.security_page import SecurityPage
 from sireh_doctor.gui.data_rescue_page import DataRescuePage
 from sireh_doctor.gui.repair_advisor_page import RepairAdvisorPage
+from sireh_doctor.gui.command_clinic_page import CommandClinicPage
 
 
 FEATURES = [
@@ -165,6 +166,10 @@ class MainWindow(QMainWindow):
             if feature == "Data Rescue":
                 self.pages.addWidget(DataRescuePage())
                 continue
+            if feature == "Command Clinic":
+                self.pages.addWidget(CommandClinicPage())
+                continue
+
             if feature == "Repair Advisor":
                 self.pages.addWidget(
                     RepairAdvisorPage(
