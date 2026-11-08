@@ -173,7 +173,7 @@ class SecurityPage(QWidget):
                 "Run this check to inspect local security evidence."
             )
             details.setLineWrapMode(QPlainTextEdit.WidgetWidth)
-            details.setFixedHeight(155)
+            details.setFixedHeight(220)
             details.setStyleSheet(
                 "QPlainTextEdit { background: #f8faf8;"
                 "border: 1px solid #e2eae3;"
@@ -329,6 +329,11 @@ class SecurityPage(QWidget):
         )
 
         self.update_assessment()
+        self.progress.setText(
+            "Ready — {} of {} checks completed".format(
+                len(self.results), len(CHECKS)
+            )
+        )
 
     def update_assessment(self):
         completed = len(self.results)

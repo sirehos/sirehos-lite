@@ -144,6 +144,25 @@ class RepairAdvisorPage(QWidget):
             if widget is not None:
                 widget.deleteLater()
 
+    @staticmethod
+    def _friendly_check(check):
+        """Present internal check identifiers in readable form."""
+        text = str(check).replace("_", " ").strip()
+        return text[:1].upper() + text[1:] if text else "Unnamed check"
+
+    @staticmethod
+    def _finding_groups(findings):
+        """Separate observed concerns from inconclusive evidence."""
+        concerns = [
+            item for item in findings
+            if item.get("status") in ("FAIL", "CRITICAL", "WARN", "WARNING")
+        ]
+        inconclusive = [
+            item for item in findings
+            if item.get("status") in ("UNKNOWN", "ERROR")
+        ]
+        return concerns, inconclusive
+
     def analyze(self):
         try:
             snapshots = self.snapshot_provider()
@@ -160,21 +179,43 @@ class RepairAdvisorPage(QWidget):
         plan = self.plan
         findings = plan["findings"]
 
+        concerns, inconclusive = self._finding_groups(findings)
+
         summary_text = chr(10).join([
             f"Diagnostic sources assessed: "
             f"{plan['assessed_sources']} of {plan['total_sources']}",
             f"Diagnostic sources not assessed: "
             f"{len(plan['unassessed_sources'])}",
-            f"Findings requiring review: {len(findings)}",
+            f"Observed warnings / failures: {len(concerns)}",
+            f"Inconclusive findings requiring further checks: "
+            f"{len(inconclusive)}",
             "Not assessed: "
             + (", ".join(plan["unassessed_sources"]) or "None"),
         ])
         self.summary.layout().itemAt(1).widget().setText(summary_text)
 
-        for index, finding in enumerate(findings, 1):
+        for group_title, group_items in (
+            ("OBSERVED WARNINGS / FAILURES", concerns),
+            ("INCONCLUSIVE — FURTHER CHECKS REQUIRED", inconclusive),
+        ):
+            if not group_items:
+                continue
+
             self.results_layout.addWidget(self._card(
-                f"{index}. [{finding['status']}] "
-                f"{finding['source']} — {finding['check']}",
+                group_title,
+                (
+                    "These findings identify observed concerns."
+                    if group_items is concerns
+                    else "UNKNOWN means insufficient evidence, "
+                         "not a confirmed fault or a PASS."
+                )
+            ))
+
+            for index, finding in enumerate(group_items, 1):
+                self.results_layout.addWidget(self._card(
+                    f"{index}. [{finding['status']}] "
+                    f"{finding['source']} — "
+                    f"{self._friendly_check(finding['check'])}",
                 f"Evidence: {finding['summary']}\n\n"
                 f"Recommended next step: {finding['recommendation']}\n"
                 f"Risk classification: {finding['risk']}"
@@ -210,7 +251,8 @@ class RepairAdvisorPage(QWidget):
         for index, item in enumerate(self.plan["findings"], 1):
             lines.extend([
                 f"{index}. [{item['status']}] "
-                f"{item['source']} / {item['check']}",
+                f"{item['source']} / "
+                f"{self._friendly_check(item['check'])}",
                 f"Evidence: {item['summary']}",
                 f"Next step: {item['recommendation']}",
                 f"Risk: {item['risk']}",

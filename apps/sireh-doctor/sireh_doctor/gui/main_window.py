@@ -25,6 +25,7 @@ from sireh_doctor.gui.data_rescue_page import DataRescuePage
 from sireh_doctor.gui.repair_advisor_page import RepairAdvisorPage
 from sireh_doctor.gui.command_clinic_page import CommandClinicPage
 from sireh_doctor.gui.health_report_page import HealthReportPage
+from sireh_doctor.gui.full_health_page import FullHealthPage
 
 
 FEATURES = [
@@ -42,6 +43,58 @@ FEATURES = [
 
 
 class MainWindow(QMainWindow):
+
+    def _sync_master_audit_result(self, area, check, results):
+        """Populate existing diagnostic cards from completed audit evidence."""
+        if area not in ("osboot", "crash", "security"):
+            return
+
+        if not isinstance(results, dict):
+            return
+
+        feature_names = {
+            "osboot": "OS & Boot Doctor",
+            "crash": "Crash Detective",
+            "security": "Security Doctor",
+        }
+
+        feature = feature_names[area]
+        page = self.pages.widget(FEATURES.index(feature))
+
+        if not hasattr(page, "receive_result"):
+            return
+
+        for check_id, result in results.items():
+            if not isinstance(result, dict):
+                continue
+
+            if check_id not in getattr(page, "cards", {}):
+                continue
+
+            timestamp = result.get("collected_at")
+            if not timestamp:
+                continue
+
+            page.receive_result(check_id, result, timestamp)
+
+    def _complete_master_audit_handoff(self, cancelled):
+        """Prepare cached reports only after a completed master audit."""
+        if cancelled:
+            return
+
+        audit = self.full_health_page
+        if audit is None or not audit.results:
+            return
+
+        report = self.pages.widget(
+            FEATURES.index("Health Report")
+        )
+        advisor = self.pages.widget(
+            FEATURES.index("Repair Advisor")
+        )
+
+        report.generate()
+        advisor.analyze()
 
     def _advisor_snapshots(self):
         """Read cached diagnostic results without running checks."""
@@ -61,6 +114,10 @@ class MainWindow(QMainWindow):
             values = getattr(page, attribute, None)
             if isinstance(values, dict):
                 snapshots[key] = dict(values)
+        audit = getattr(self, "full_health_page", None)
+        if audit is not None:
+            for key, findings in audit.results.items():
+                snapshots.setdefault(key, {}).update(findings)
         return snapshots
 
     def __init__(self):
@@ -143,7 +200,25 @@ class MainWindow(QMainWindow):
 
         self.pages = QStackedWidget()
 
+        self.full_health_page = None
+
         for index, feature in enumerate(FEATURES, start=1):
+            if feature == "Full Health Check":
+                self.full_health_page = FullHealthPage()
+                self.full_health_page.navigate.connect(
+                    lambda name: self.navigation.setCurrentRow(
+                        FEATURES.index(name)
+                    )
+                )
+                self.full_health_page.audit_result_ready.connect(
+                    self._sync_master_audit_result
+                )
+                self.full_health_page.audit_finished.connect(
+                    self._complete_master_audit_handoff
+                )
+                self.pages.addWidget(self.full_health_page)
+                continue
+
             if feature == "Hardware Doctor":
                 self.pages.addWidget(HardwarePage())
                 continue

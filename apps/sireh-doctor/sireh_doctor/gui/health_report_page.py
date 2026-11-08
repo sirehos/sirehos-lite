@@ -118,7 +118,7 @@ class HealthReportPage(QWidget):
 
         self.preview = QTextEdit()
         self.preview.setReadOnly(True)
-        self.preview.setMinimumHeight(300)
+        self.preview.setMinimumHeight(520)
         self.preview.setPlaceholderText(
             "The consolidated diagnostic report will appear here."
         )

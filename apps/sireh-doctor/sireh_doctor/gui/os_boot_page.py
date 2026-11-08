@@ -274,6 +274,11 @@ class OSBootPage(QWidget):
             or "No additional details"
         )
         self.update_assessment()
+        self.progress.setText(
+            "Ready — {} of {} checks completed".format(
+                len(self.results), len(CHECKS)
+            )
+        )
 
     def update_assessment(self):
         total = len(CHECKS)

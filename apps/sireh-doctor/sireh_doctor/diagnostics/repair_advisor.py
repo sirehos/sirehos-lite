@@ -32,11 +32,50 @@ def _text(value):
 
 def _recommendation(source, check, status):
     if status in ("UNKNOWN", "ERROR"):
-        return (
-            "The available evidence is insufficient. Review the "
-            "original diagnostic result before drawing conclusions.",
-            "SAFE READ-ONLY REVIEW",
-        )
+        name = (source + " " + check).lower()
+
+        if "storage" in name or "smart" in name:
+            advice = (
+                "Disk health is not established. Open Storage Doctor "
+                "and review its separate, user-triggered SMART assessment "
+                "when appropriate and authorized. Do not attempt repairs."
+            )
+        elif "security" in name:
+            advice = (
+                "Open Security Doctor and review the collected evidence "
+                "for this check against the expected security policy. "
+                "The current result does not certify security."
+            )
+        elif "boot" in name or "efi" in name:
+            advice = (
+                "Open OS & Boot Doctor and review the available boot "
+                "and configuration evidence. Do not modify boot records "
+                "or system partitions."
+            )
+        elif "crash" in name:
+            advice = (
+                "Open Crash Detective and review available crash "
+                "artifacts and timestamps. An inconclusive result "
+                "does not establish that no crashes occurred."
+            )
+        elif "hardware" in name:
+            advice = (
+                "Open Hardware Doctor and review available sensor "
+                "and device evidence. Missing sensor data does not "
+                "establish a hardware fault."
+            )
+        elif "rescue" in name:
+            advice = (
+                "Open Data Rescue to review read-only discovery "
+                "results. Do not begin recovery or disk modifications."
+            )
+        else:
+            advice = (
+                "Review the original diagnostic evidence. The available "
+                "information is insufficient to establish a conclusion."
+            )
+
+        return advice, "SAFE READ-ONLY REVIEW"
 
     name = (source + " " + check).lower()
 

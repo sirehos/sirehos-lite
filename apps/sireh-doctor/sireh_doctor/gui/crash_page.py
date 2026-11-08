@@ -305,6 +305,11 @@ class CrashPage(QWidget):
         )
 
         self.update_assessment()
+        self.progress.setText(
+            "Ready — {} of {} checks completed".format(
+                len(self.results), len(CHECKS)
+            )
+        )
 
     def update_assessment(self):
         completed = len(self.results)
