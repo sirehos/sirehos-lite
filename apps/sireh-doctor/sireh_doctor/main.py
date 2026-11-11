@@ -11,7 +11,7 @@ def main():
     app.setApplicationName("Sireh Doctor")
 
     window = MainWindow()
-    window.show()
+    window.showMaximized()
 
     return app.exec_()
 

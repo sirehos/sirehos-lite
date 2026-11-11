@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Home
+Comment=Open your home folder
+Exec=pcmanfm-qt
+Icon=/usr/share/icons/Adwaita/scalable/places/user-home.svg
+Terminal=false
+Categories=System;FileManager;

@@ -14,6 +14,8 @@ SOURCES=(
     "$CONFIG/lxqt-panel.conf"
     "$CONFIG/lightdm-gtk-greeter.conf"
     "$CONFIG/Sireh-Terminal.desktop"
+    "$CONFIG/Sireh-Doctor.desktop"
+    "$CONFIG/sireh-doctor-autostart.desktop"
     "$PROJECT_DIR/assets/wallpapers/$WALLPAPER"
 )
 
@@ -51,6 +53,14 @@ sudo install -D -m 644 \
 sudo install -D -m 755 \
     "$CONFIG/Sireh-Terminal.desktop" \
     "$ROOTFS/etc/skel/Desktop/Sireh-Terminal.desktop"
+
+sudo install -D -m 755 \
+    "$CONFIG/Sireh-Doctor.desktop" \
+    "$ROOTFS/etc/skel/Desktop/Sireh-Doctor.desktop"
+
+sudo install -D -m 644 \
+    "$CONFIG/sireh-doctor-autostart.desktop" \
+    "$ROOTFS/etc/xdg/autostart/sireh-doctor.desktop"
 
 sudo install -D -m 644 \
     "$PROJECT_DIR/assets/wallpapers/$WALLPAPER" \

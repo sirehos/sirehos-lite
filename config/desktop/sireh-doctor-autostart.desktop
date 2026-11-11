@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Sireh Doctor Autostart
+Comment=Launch Sireh Doctor when the graphical desktop starts
+Exec=/usr/local/bin/sireh-doctor
+Icon=/opt/sirehos/assets/branding/SirehOS_Lite_Emblem.png
+Terminal=false
+OnlyShowIn=LXQt;
+X-GNOME-Autostart-enabled=true

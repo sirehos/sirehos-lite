@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Sireh Doctor
+Comment=Read-only system health and diagnostics
+Exec=/usr/local/bin/sireh-doctor
+Icon=/opt/sirehos/assets/branding/SirehOS_Lite_Emblem.png
+Terminal=false
+Categories=System;Utility;
+StartupNotify=true
